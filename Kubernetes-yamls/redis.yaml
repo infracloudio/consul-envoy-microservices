@@ -24,12 +24,12 @@ spec:
     metadata:
       labels:
         app: redis-cart
-#      annotations:
-#        "consul.hashicorp.com/connect-inject": "true"
-#        "consul.hashicorp.com/connect-service-port": "6379"
+      annotations:
+        "consul.hashicorp.com/connect-inject": "true"
+        "consul.hashicorp.com/connect-service-port": "6379"
     spec:
       containers:
-      - name: redis
+      - name: redis-cart
         image: redis:alpine
         ports:
         - containerPort: 6379
@@ -54,17 +54,5 @@ spec:
       volumes:
       - name: redis-data
         emptyDir: {}
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: redis-cart
-spec:
-  type: ClusterIP
-  selector:
-    app: redis-cart
-  ports:
-  - name: redis
-    port: 6379
-    targetPort: 6379
+
 
