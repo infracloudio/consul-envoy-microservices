@@ -1,0 +1,33 @@
+#apiVersion: ambassador/v0
+#kind: Mapping
+#metadata:
+#  name: consul-frontend-mapping
+#  namespace: default
+#spec:
+#  prefix: /
+#  host: frontend
+#  service: frontend-sidecar-proxy
+#  resolver: consul-minidc
+#  tls: ambassador-consul
+#  load_balancer:
+#    policy: round_robin
+kind: Service
+apiVersion: v1
+metadata:
+  name: consul-frontend
+  annotations:
+    getambassador.io/config: |
+      ---
+      apiVersion: ambassador/v0
+      kind:  Mapping
+      name:  consul-frontend-mapping
+      prefix: /
+      service: frontend-sidecar-proxy
+spec:
+  selector:
+    app: frontend
+  type: NodePort
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
