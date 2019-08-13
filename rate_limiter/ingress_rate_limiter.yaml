@@ -1,0 +1,82 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hipster-ingress
+spec:
+  selector:
+    app: hipster-ingress
+  ports:
+  - name: http
+    protocol: TCP
+    port: 80
+    targetPort: 80
+  type: NodePort
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hipster-ingress-configmap
+data:
+  config: |
+    events {
+      worker_connections  1024;
+    }
+
+    http {
+
+      limit_req_zone $binary_remote_addr zone=limit:10m rate=1r/s;
+
+      upstream frontend {
+        server localhost:1246;
+      }
+
+      server {
+        
+        location / {
+          proxy_pass http://frontend;
+          proxy_set_header Host $host;
+          
+          limit_req zone=limit;
+          limit_rate 1m;
+        }
+      }
+    }
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hipster-ingress
+  labels:
+    app: hipster-ingress
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hipster-ingress
+  template:
+    metadata:
+      labels:
+        app: hipster-ingress
+      annotations:
+        "consul.hashicorp.com/connect-inject": "true"
+        "consul.hashicorp.com/connect-service-port": "80"
+        "consul.hashicorp.com/connect-service-upstreams": "frontend:1246"
+    spec:
+      volumes:
+      - name: config
+        configMap:
+          name: hipster-ingress-configmap
+          items:
+          - key: config
+            path: nginx.conf
+      containers:
+      - name: nginx
+        image: nginx:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: config
+          mountPath: /etc/nginx/
