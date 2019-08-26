@@ -1,0 +1,23 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qotm-consul
+  annotations:
+    getambassador.io/config: |
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      name: consul_qotm_mapping
+      prefix: /qotm-consul/
+      service: qotm-consul
+      timeout_ms: 10000
+      #resolver: consul-minidc
+spec:
+  selector:
+    app: qotm
+  type: NodePort
+  externalTrafficPolicy: Local
+  ports:
+  - port: 80
+    targetPort: 5000

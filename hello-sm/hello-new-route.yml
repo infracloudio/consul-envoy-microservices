@@ -1,0 +1,31 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-world
+  annotations:
+    getambassador.io/config: |
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      name: helloworld-mapping
+      prefix: /
+      service: hello-world-sidecar-proxy
+      timeout_ms: 20000
+      resolver: consul-minidc
+      tls: ambassador-consul
+      ---
+      apiVersion: getambassador.io/v1
+      kind:  TLSContext
+      name:  tls
+      secret: ambassador-certs
+      hosts: ["*"]
+      alpn_protocols: h2[, http/1.1]
+spec:
+  selector:
+    app: hello-world
+  type: NodePort
+  #externalTrafficPolicy: Local
+  ports:
+  - port: 443
+    targetPort: 20000

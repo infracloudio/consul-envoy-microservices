@@ -1,0 +1,14 @@
+---
+apiVersion: getambassador.io/v1
+kind: Mapping
+metadata:
+  name: helloworld-mapping
+  #namespace: default
+spec:
+  prefix: /hello-world/
+  #host: qotm-mtls
+  service: hello-world-sidecar-proxy
+  resolver: consul-minidc
+  tls: ambassador-consul
+  timeout_ms: 20000
+  use_websocket: true
